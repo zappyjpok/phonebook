@@ -6,64 +6,24 @@
  * Time: 10:22 PM
  */ ?>
 
-<?php  require_once('../App/Library/Paths/Links.php'); ?>
-
-<nav class="top-bar" data-topbar>
-    <ul class="title-area">
-        <li class="name">
-            <h3><a href="<?php echo Links::action_link('home') ?>">Home </a></h3>
-        </li>
-        <li class="toggle-topbar menu-icon"><a href="#"><span>Menu</span></a></li>
-    </ul>
-
-    <div class="top-bar-section">
-
-        <?php
-
-        if($loggedIn === true)
-        {
-            require_once('../App/Views/_layouts/_navLoggedIn.php');
-        }
-        else{
-            require_once('../App/Views/_layouts/_navNotLoggedIn.php');
-        }
-        ?>
-
-
-        <!-- Left Nav Section -->
-        <ul class="left">
-            <?php
-                foreach($navValues as $topNav){ ?>
-                    <li class="has-dropdown">
-                        <a href="#">
-                            <?php echo $topNav['name']; ?>
-                        </a>
-                        <ul class="dropdown">
-                        <?php
-                        foreach($topNav as $array){
-                            if(is_array($array)) {
-                                foreach ($array as $sub) {
-                                    foreach($sub as $name)
-                                    {
-                                        if(!is_null($name)) { ?>
-                                            <li>
-                                                <a href="#">
-                                                    <?php echo $name; ?>
-                                                </a>
-                                            </li> <?php
-                                        }
-                                    }
-                                }
-                            }
-                        } ?>
-                        </ul>
-                    </li> <?php
-                }
-            ?>
-        </ul>
+<nav class="navbar navbar-inverse">
+    <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Phonebook</a>
+        </div>
+        <div class="collapse navbar-collapse" id="myNavbar">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="#">Home</a></li>
+            <li><a href="#">Page 1</a></li>
+            <li><a href="#">Page 2</a></li>
+            <li><a href="#">Page 3</a></li>
+          </ul>
+          <?php require_once('../App/Views/_layouts/_navNotLoggedIn.php') ?>
+        </div>
     </div>
-
 </nav>
-
-
-

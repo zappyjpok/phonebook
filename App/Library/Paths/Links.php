@@ -26,7 +26,7 @@ class Links {
         $url = filter_var(rtrim($name, '/'), FILTER_SANITIZE_URL);
         if($_SERVER['SERVER_NAME'] === 'localhost')
         {
-            $url = '/shoppingcart/Public/' . $name;
+            $url = '/phonebook/Public/' . $name;
         } else {
             $url = 'http://a78135893.tafenowweb.net/' . $name;
         }

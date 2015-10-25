@@ -7,7 +7,7 @@
  */ ?>
 
 <!-- Right Nav Section -->
-<ul class="right">
-    <li><a href="<?php echo Links::action_link('users/login'); ?>">Login </a></li>
-    <li><a href="<?php echo Links::action_link('users/create'); ?>">Register </a></li>
+<ul class="nav navbar-nav navbar-right">
+    <li><a href="#"><span class="glyphicon glyphicon-user"></span> Sign Up</a></li>
+    <li><a href="#"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
 </ul>

@@ -15,7 +15,11 @@ css file called app in the public directory
 /***********************************************************************************************
 /***********************************************************************************************/
 
-
+@import "../../../bower_components/bootstrap-sass/assets/stylesheets/_bootstrap.scss";
+@import "../../../bower_components/bootstrap-sass/assets/stylesheets/_bootstrap-compass.scss";
+@import "../../../bower_components/bootstrap-sass/assets/stylesheets/_bootstrap-mincer.scss";
+@import "../../../bower_components/bootstrap-sass/assets/stylesheets/_bootstrap-sprockets.scss";
+@import "../../../bower_components/font-awesome/scss/font-awesome.scss";
 
 /***********************************************************************************************
 /***********************************************************************************************
