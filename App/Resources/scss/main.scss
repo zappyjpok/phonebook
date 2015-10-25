@@ -1,0 +1,72 @@
+
+/***********************************************************************************************
+/***********************************************************************************************
+
+                    Main page
+
+/***********************************************************************************************
+/***********************************************************************************************/
+
+//Main page button to view more or add to cart
+.button-group {
+  position: relative;
+  display: inline-block;
+  margin: 1rem 0;
+  &:before {
+    content: attr(data-grouptype);
+    z-index: 99999;
+    color: #999;
+    display: block;
+    font-size: 1rem;
+    padding: 0.25em;
+    border-radius: 50%;
+    background: #fff;
+    position: absolute;
+    left: 42.5%;
+    top: 0.35rem;
+  }
+  button + button {
+    margin-left: 5px;
+  }
+}
+
+//Second part of the cart screen 
+.jumbo {
+  background-color: #b5d592;
+  padding: 0px;
+  margin: 0px;
+  height: 165px;
+}
+
+.cart {
+  height: 165px;
+  border-width: 1px;
+  border-color: #ff0000;
+}
+
+// Class to make sure the images are the same height 
+.height-200 {
+  height: 200px;
+}
+
+/***********************************************************************************************
+/***********************************************************************************************
+
+                    Order Page
+
+/***********************************************************************************************
+/***********************************************************************************************/
+
+.top-buffer-10 {
+  margin-top: 10px;
+}
+
+.priceTitle {
+  color:#00b3ee;
+  font-weight: bold;
+}
+
+.price {
+  color:#d58512;
+  font-weight: bold;
+}
