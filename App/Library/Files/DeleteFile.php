@@ -1,7 +1,7 @@
 <?php
 /**
  * Created by PhpStorm.
- * User: thuyshawn
+ * user: thuyshawn
  * Date: 6/05/2015
  * Time: 4:40 PM
  */

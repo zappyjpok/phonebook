@@ -1,7 +1,7 @@
 <?php
 /**
  * Created by PhpStorm.
- * User: Shawn Legge
+ * user: Shawn Legge
  * Date: 25/10/2015
  * Time: 4:32 PM
  */ ?>
@@ -19,3 +19,4 @@
             <?php  require_once('../App/Views/_layouts/_nav.php') ?>
             <?php  require_once('../App/Views/_layouts/_header.php') ?>
             <?php  require_once('../App/Views/_layouts/_search.php') ?>
+            <?php  require_once('../App/Views/_layouts/_messages.php') ?>

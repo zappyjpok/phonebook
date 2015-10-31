@@ -7870,56 +7870,35 @@ button.close {
 
 /***********************************************************************************************
 /***********************************************************************************************/
-.button-group {
-  position: relative;
-  display: inline-block;
-  margin: 1rem 0; }
-  .button-group:before {
-    content: attr(data-grouptype);
-    z-index: 99999;
-    color: #999;
-    display: block;
-    font-size: 1rem;
-    padding: 0.25em;
-    border-radius: 50%;
-    background: #fff;
-    position: absolute;
-    left: 42.5%;
-    top: 0.35rem; }
-  .button-group button + button {
-    margin-left: 5px; }
-
-.jumbo {
-  background-color: #b5d592;
-  padding: 0px;
-  margin: 0px;
-  height: 165px; }
-
-.cart {
-  height: 165px;
-  border-width: 1px;
-  border-color: #ff0000; }
-
-.height-200 {
-  height: 200px; }
+.ad-image {
+  height: 80px;
+  width: auto; }
 
 /***********************************************************************************************
 /***********************************************************************************************
 
-                    Order Page
+                    Layout
 
 /***********************************************************************************************
 /***********************************************************************************************/
-.top-buffer-10 {
-  margin-top: 10px; }
+.footer-nav ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden; }
 
-.priceTitle {
-  color: #00b3ee;
-  font-weight: bold; }
+.footer-nav ul li {
+  float: left; }
 
-.price {
-  color: #d58512;
-  font-weight: bold; }
+.footer-nav a {
+  display: block;
+  width: 100px; }
+
+.footer-nav a:hover {
+  cursor: pointer; }
+
+.spacing {
+  text-align: center; }
 
 #tooltip_container {
   color: #ffffff;

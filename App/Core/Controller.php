@@ -1,7 +1,7 @@
 <?php
 /**
  * Created by PhpStorm.
- * User: thuyshawn
+ * user: thuyshawn
  * Date: 1/09/2015
  * Time: 6:23 PM
  */
@@ -23,7 +23,7 @@ class Controller
 
     public function __construct()
     {
-        $sessions = new SecureSessionHandler('Shopping_Cart');
+        $sessions = new SecureSessionHandler('PhoneBook_sessions');
         $sessions->start();
         $this->sessions = $sessions;
 
@@ -31,6 +31,13 @@ class Controller
         $this->login = $login;
         $this->loggedIn = $login->is_logged_in();
     }
+
+    /**
+     * Get model for the controller
+     *
+     * @param $model
+     * @return mixed
+     */
 
     public function model($model)
     {
@@ -43,9 +50,18 @@ class Controller
             echo 'Error: This model does not exist';
         }
     }
+
+    /**
+     * Get views from the view folder
+     *
+     * @param $view -- view
+     * @param array $data -- parameters passed to the view
+     */
     public function view($view, $data = [])
     {
-        //$loggedIn = $this->loggedIn;
+        // Value to determine if the user is logged in
+        $loggedIn = $this->loggedIn;
+
         require_once('../App/Views/' . $view . '.php');
     }
 

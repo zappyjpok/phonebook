@@ -1,7 +1,7 @@
 <?php
 /**
  * Created by PhpStorm.
- * User: thuyshawn
+ * user: thuyshawn
  * Date: 6/09/2015
  * Time: 7:19 PM
  */
@@ -84,9 +84,15 @@ class Login {
         $this->logged_in = false;
     }
 
+    /**
+     * Provides a unique login code
+     *
+     * @return string
+     */
     public function getToken()
     {
         $token = $_SESSION['token'] = md5(uniqid(mt_rand(), true));
+        $this->sessions->put('token', $token);
         return $token;
     }
 }

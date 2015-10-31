@@ -3,7 +3,7 @@
 Options -MultiViews
 RewriteEngine On
 
-RewriteBase /ShoppingCart/Public
+RewriteBase /phonebook/Public
 
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME} !-f
@@ -19,3 +19,4 @@ php_flag display_errors on
 php_flag html_errors on
 php_flag  log_errors on
 php_value error_log  /home/path/public_html/domain/PHP_errors.log
+php_value error_reporting       2039

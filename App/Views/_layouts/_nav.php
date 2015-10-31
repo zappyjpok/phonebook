@@ -1,7 +1,7 @@
 <?php
 /**
  * Created by PhpStorm.
- * User: thuyshawn
+ * user: thuyshawn
  * Date: 5/09/2015
  * Time: 10:22 PM
  */ ?>
@@ -23,7 +23,13 @@
             <li><a href="#">Page 2</a></li>
             <li><a href="#">Page 3</a></li>
           </ul>
-          <?php require_once('../App/Views/_layouts/_navNotLoggedIn.php') ?>
+          <?php
+            if($loggedIn) {
+                require_once('../App/Views/_layouts/_navLoggedIn.php');
+            } else {
+                require_once('../App/Views/_layouts/_navNotLoggedIn.php');
+            }
+          ?>
         </div>
     </div>
 </nav>

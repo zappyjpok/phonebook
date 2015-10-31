@@ -1,7 +1,7 @@
 <?php
 /**
  * Created by PhpStorm.
- * User: Shawn Legge
+ * user: Shawn Legge
  * Date: 25/10/2015
  * Time: 10:02 PM
  */?>

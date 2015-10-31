@@ -216,30 +216,23 @@ class SecureSessionHandler extends SessionHandler {
     }
 
     /**
-     * Adds a session value
+     * Adds a session value that deletes the old one
      *
      * @param $name
      * @param $value
      */
     public function put($name, $value)
     {
-        $parsed = explode('.', $name);
-
-        $session =& $_SESSION;
-
-        while (count($parsed) > 1) {
-            $next = array_shift($parsed);
-
-            if ( ! isset($session[$next]) || ! is_array($session[$next])) {
-                $session[$next] = [];
-            }
-
-            $session =& $session[$next];
-        }
-
-        $session[array_shift($parsed)] = $value;
+        $_SESSION[$name] = $value;
     }
 
+    /**
+     * Pushes a session value onto another session
+     *
+     * @param $name
+     * @param $value
+     * @param bool $time
+     */
     public function push($name, $value, $time = false)
     {
         if(!isset($_SESSION[$name]) && count($_SESSION[$name]) < 1)
@@ -259,6 +252,12 @@ class SecureSessionHandler extends SessionHandler {
         }
     }
 
+    /**
+     * Check when the session started
+     *
+     * @param $name
+     * @return bool
+     */
     public function getSessionLength($name)
     {
         $length = false;

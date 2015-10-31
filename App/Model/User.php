@@ -1,11 +1,10 @@
 <?php
 /**
  * Created by PhpStorm.
- * User: thuyshawn
+ * user: thuyshawn
  * Date: 30/08/2015
  * Time: 5:32 PM
  */
-
 
 require_once('../App/Database/PDO_Connect.php');
 
@@ -32,16 +31,17 @@ class User {
         return $results;
     }
 
-    public static function Add($firstName, $lastName, $email, $password)
+    public static function Add($firstName, $lastName, $username, $email, $password)
     {
         try {
             $pass = password_hash($password, PASSWORD_DEFAULT);
-            $sql = 'INSERT INTO tblUser(useFirstName, useLastName, useEmail, usePassword)
-                    VALUES (:FirstName, :LastName, :Email, :Password)';
+            $sql = 'INSERT INTO tblUser(useFirstName, useLastName, useUsername, useEmail, usePassword)
+                    VALUES (:FirstName, :LastName, :Username, :Email, :Password)';
             $db = new PDO_Connect();
             $db->prepare($sql);
             $db->bind(':FirstName', $firstName);
             $db->bind(':LastName', $lastName);
+            $db->bind(':Username', $username);
             $db->bind(':Email', $email);
             $db->bind(':Password', $pass);
             $db->execute();
@@ -59,6 +59,42 @@ class User {
             $db = new PDO_Connect();
             $db->prepare($sql);
             $db->bind(':Email', $email);
+            $errors = $db->getErrors();
+            $results = $db->single();
+        } catch (Exception $e) {
+            $error = $e->getMessage();
+        }
+
+        return $results;
+    }
+
+    public static function find_email_exists($email)
+    {
+        try {
+            $sql = "SELECT useUserId
+            FROM tblUser
+            WHERE useEmail=:Email";
+            $db = new PDO_Connect();
+            $db->prepare($sql);
+            $db->bind(':Email', $email);
+            $errors = $db->getErrors();
+            $results = $db->single();
+        } catch (Exception $e) {
+            $error = $e->getMessage();
+        }
+
+        return $results;
+    }
+
+    public static function find_username_exists($username)
+    {
+        try {
+            $sql = "SELECT useUserId
+            FROM tblUser
+            WHERE useUserName=:username";
+            $db = new PDO_Connect();
+            $db->prepare($sql);
+            $db->bind(':username', $username);
             $errors = $db->getErrors();
             $results = $db->single();
         } catch (Exception $e) {
