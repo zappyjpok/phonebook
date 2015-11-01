@@ -198,21 +198,7 @@ class SecureSessionHandler extends SessionHandler {
      */
     public function get($name)
     {
-        $parsed = explode('.', $name);
-
-        $result = $_SESSION;
-
-        while ($parsed) {
-            $next = array_shift($parsed);
-
-            if (isset($result[$next])) {
-                $result = $result[$next];
-            } else {
-                return null;
-            }
-        }
-
-        return $result;
+        return $_SESSION[$name];
     }
 
     /**

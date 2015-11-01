@@ -50,6 +50,28 @@ class User {
         }
     }
 
+    public static function edit($userID, $firstName, $lastName, $username, $email)
+    {
+        try {
+            $sql = 'UPDATE tblUser
+                    SET useFirstName = :FirstName,
+                    useLastName = :LastName,
+                    useUsername = :Username,
+                    useEmail = :Email
+                    WHERE useUserID = :ID';
+            $db = new PDO_Connect();
+            $db->prepare($sql);
+            $db->bind(':ID', $userID);
+            $db->bind(':FirstName', $firstName);
+            $db->bind(':LastName', $lastName);
+            $db->bind(':Username', $username);
+            $db->bind(':Email', $email);
+            $db->execute();
+        } catch (Exception $e) {
+            $error = $e->getMessage();
+        }
+    }
+
     public static function find_by_email($email)
     {
         try {
@@ -107,7 +129,7 @@ class User {
     public static function find($id)
     {
         try {
-            $sql = "SELECT useUserId, useFirstName, useLastName, useEmail
+            $sql = "SELECT useUserId, useFirstName, useLastName, useEmail, useUserName
                 FROM tblUser
                 WHERE useUserID=:Id";
             $db = new PDO_Connect();

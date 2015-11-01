@@ -10,7 +10,7 @@
 <ul class="nav navbar-nav navbar-right">
     <li>
         <a href="#"> Hello
-            <?php echo $_SESSION['user'][0]['user_FirstName'] . " " . $_SESSION['user'][0]['user_LastName']?>
+            <?php echo $_SESSION['user']['user_FirstName'] . " " . $_SESSION['user']['user_LastName']?>
         </a>
     </li>
     <li>

@@ -64,11 +64,12 @@ class Login {
 
         if($user)
         {
-            $this->sessions->push('user', [
+            $this->sessions->put('user', [
                 'user_id' => $user['useUserId'],
                 'user_FirstName' => $user['useFirstName'],
                 'user_LastName' => $user['useLastName'],
-                'user_Email' => $user['useEmail']
+                'user_Email' => $user['useEmail'],
+                'user_Username' => $user['userUserName']
             ]);
             $this->user_id = $user['useUserId'];
             $this->logged_in = true;

@@ -33,12 +33,27 @@ class users extends Controller
     ];
 
     /**
+     * @var array -- username validation rules update
+     */
+    private $usernameUpdate = [
+        'empty' => 'Please provide a username',
+    ];
+
+    /**
      * @var array -- email validation rules
      */
     private $email = [
         'empty' => 'Please provide your email address',
         'validEmail' => 'The email you provided is not valid',
         'emailAvailable' => 'The email you provided has already been registered'
+    ];
+
+    /**
+     * @var array -- email validation rules for update
+     */
+    private $emailUpdate = [
+        'empty' => 'Please provide your email address',
+        'validEmail' => 'The email you provided is not valid',
     ];
 
     /**
@@ -86,31 +101,16 @@ class users extends Controller
     {
         $this->model('User');
 
-        $fields = [
-            'Fname' => $_POST['FirstName'],
-            'Lname' => $_POST['LastName'],
-            'username'  => $_POST['Username'],
-            'email'     => $_POST['Email'],
-            'password'  => $_POST['Password'],
-            'matchPassword' => $_POST['Confirm_Password']
-        ];
+        $fields = $this->getFields();
 
         $errors = $this->validation($fields);
 
         if(empty($errors)) {
             User::Add($_POST['FirstName'], $_POST['LastName'], $_POST['Username'], $_POST['Email'], $_POST['Password']);
-            $success = "Congratulations, you created an account";
-            $this->view('home/index', [
-                'success' => $success
-            ]);
+            $this->successAction('home/index', 'Congratulations, you created an account');
+
         } else {
-            $this->view('user/create', [
-                'errors' => $errors,
-                'firstName' => $_POST['FirstName'],
-                'lastName' => $_POST['LastName'],
-                'username' => $_POST['Username'],
-                'email' => $_POST['Email']
-            ]);
+            $this->RegistrationValidationFailed('user/create', $errors);
         }
     }
 
@@ -141,7 +141,7 @@ class users extends Controller
             'confirmPassword'   => $_POST['Password']
         ];
         // Error messages
-        $errors = $this->validation($fields);
+        $errors = $this->validation($fields, 2);
 
         //check if the token matches the session token
         // If not it could be an attack
@@ -149,41 +149,64 @@ class users extends Controller
         {
             if(!empty($errors))
             {
-                $token = $this->login->getToken();
-                $this->view('user/login', [
-                    'errors' => $errors,
-                    'token' => $token,
-                    'email' => $_POST['Email']
-                ]);
+                $this->failedLogin($errors);
             } else {
                 if ($user)
                 {
                     $this->login->login($user);
-                    $success = "You are now logged in!";
-                    $this->view('home/index', [
-                        'success' => $success
-                    ]);
+                    $sucess= "You are now logged in!";
+                    $this->successAction('home/index', $sucess);
                 } else {
-                    $token = $this->login->getToken();
                     $error = ["Your email or password does not match our records"];
-                    $this->view('user/login', [
-                        'errors' => $error,
-                        'email' => $_POST['Email'],
-                        'token' => $token
-                    ]);
+                    $this->failedLogin($error);
                 }
             }
         } else {
-            $token = $this->login->getToken();
+
             $error = ["Something went wrong, please try again"];
-            $this->view('user/login', [
-                'errors' => $error,
-                'email' => $_POST['Email'],
-                'token' => $token
-            ]);
+            $this->failedLogin($error);
         }
         // if there are errors return to the login screen with errors
 
+    }
+
+    public function edit()
+    {
+        //User account
+        $userSession = $this->sessions->get('user');
+        $this->model('User');
+        $user = User::find($userSession['user_id']);
+
+        $this->view('user/update', [
+            'firstName' => $user['useFirstName'],
+            'lastName' => $user['useLastName'],
+            'username' => $user['useUserName'],
+            'email' => $user['useEmail']
+        ]);
+
+    }
+
+    public function update()
+    {
+        $this->model('User');
+        $user = $this->sessions->get('user');
+
+        $fields = $this->getFields();
+
+        $errors = $this->validation($fields, 1);
+
+        if(empty($errors)) {
+            User::edit($user['user_id'], $_POST['FirstName'], $_POST['LastName'], $_POST['Username'], $_POST['Email']);
+            $this->successAction('home/index', 'Your account has been updated');
+
+        } else {
+            $this->RegistrationValidationFailed('user/update', $errors);
+        }
+    }
+
+    public function test()
+    {
+        var_dump($_SESSION);
     }
 
     public function logout()
@@ -193,26 +216,94 @@ class users extends Controller
         header('location: ' . $link);
     }
 
-    public function test()
-    {
 
-        return var_dump($_SESSION);
+    /**
+     * Redirects to the home screen with a success message
+     *
+     * @param $view
+     * @param $message
+     */
+    private function successAction($view, $message)
+    {
+        $this->view($view, [
+            'success' => $message
+        ]);
     }
 
-    private function validation($fields)
+    /**
+     * Returns the view with posted valies
+     *
+     * @param $view
+     * @param $errors
+     */
+    private function RegistrationValidationFailed($view, $errors)
+    {
+        $this->view($view, [
+            'errors' => $errors,
+            'firstName' => $_POST['FirstName'],
+            'lastName' => $_POST['LastName'],
+            'username' => $_POST['Username'],
+            'email' => $_POST['Email']
+        ]);
+    }
+
+    /**
+     * Validations for the input fields
+     * View = 0 -- registration page
+     * View = 1 -- update page
+     * View = 2 -- login page
+     *
+     * @param $fields
+     * @return array
+     */
+    private function validation($fields, $view = 0)
     {
         $validate = new validation();
         if(isset($fields['Fname'])) { $validate->validate($fields['Fname'], $this->firstName); }
         if(isset($fields['Lname'])) { $validate->validate($fields['Lname'], $this->lastName); }
-        if(isset($fields['username'])) { $validate->validate($fields['username'], $this->username); }
-        if(isset($fields['email'])) {  $validate->validate($fields['email'], $this->email); }
-        if(isset($fields['password'])) {  $validate->validate($fields['password'], $this->password, $fields['matchPassword']); }
-        if(isset($fields['confirmEmail'])) { $validate->validate($fields['confirmEmail'], $this->emailConfirm); }
-        if(isset($fields['confirmPassword'])) { $validate->validate($fields['confirmPassword'], $this->passwordConfirm); }
+        if($view === 0) {
+            if(isset($fields['email'])) {  $validate->validate($fields['email'], $this->email); }
+            if(isset($fields['password'])) {  $validate->validate($fields['password'], $this->password, $fields['matchPassword']); }
+            if(isset($fields['username'])) { $validate->validate($fields['username'], $this->username); }
+        } else if ($view === 1) {
+            if(isset($fields['email'])) {  $validate->validate($fields['email'], $this->emailUpdate); }
+            if(isset($fields['username'])) { $validate->validate($fields['username'], $this->usernameUpdate); }
+        } else if ($view === 2) {
+            if(isset($fields['confirmEmail'])) { $validate->validate($fields['confirmEmail'], $this->emailConfirm); }
+            if(isset($fields['confirmPassword'])) { $validate->validate($fields['confirmPassword'], $this->passwordConfirm); }
+        }
 
         $errors = $validate->getErrors();
 
         return $errors;
+    }
+
+    /**
+     * return fields to be checked
+     *
+     * @return array
+     */
+    private function getFields()
+    {
+        $fields = [
+            'Fname' => $_POST['FirstName'],
+            'Lname' => $_POST['LastName'],
+            'username'  => $_POST['Username'],
+            'email'     => $_POST['Email'],
+            'password'  => $_POST['Password'],
+            'matchPassword' => $_POST['Confirm_Password']
+        ];
+        return $fields;
+    }
+
+    private function failedLogin($message)
+    {
+        $token = $this->login->getToken();
+        $this->view('user/login', [
+            'errors' => $message,
+            'email' => $_POST['Email'],
+            'token' => $token
+        ]);
     }
 }
 
