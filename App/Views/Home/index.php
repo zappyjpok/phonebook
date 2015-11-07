@@ -7,7 +7,6 @@
  */ ?>
 
 <?php require_once('../App/Views/_layouts/_master.php') ?>
-
     <div class="row">
         <div class="col-md-8">
             <div class="row">

@@ -17,12 +17,14 @@
           <a class="navbar-brand" href="#">Phonebook</a>
         </div>
         <div class="collapse navbar-collapse" id="myNavbar">
-          <ul class="nav navbar-nav">
-            <li class="active"><a href="#">Home</a></li>
-            <li><a href="#">Page 1</a></li>
-            <li><a href="#">Page 2</a></li>
-            <li><a href="#">Page 3</a></li>
-          </ul>
+            <ul class="nav navbar-nav">
+                <li class="active"><a href="#">Home</a></li>
+                <?php  if(isset($_SESSION['user'])) { ?>
+                    <li><a href="<?php echo Links::action_link('contacts/index/' . $_SESSION['user']['user_id']);   ?>">
+                            Contacts </a>
+                    </li>
+                <?php } ?>
+            </ul>
           <?php
             if($loggedIn) {
                 require_once('../App/Views/_layouts/_navLoggedIn.php');

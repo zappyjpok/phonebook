@@ -9,7 +9,7 @@
 <!-- Right Nav Section -->
 <ul class="nav navbar-nav navbar-right">
     <li>
-        <a href="#"> Hello
+        <a href="<?php echo Links::action_link('users/edit') ?>"> Hello
             <?php echo $_SESSION['user']['user_FirstName'] . " " . $_SESSION['user']['user_LastName']?>
         </a>
     </li>

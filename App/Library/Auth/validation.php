@@ -31,6 +31,7 @@ class validation {
      * Rule 3: name -- value must be a valid name
      * Rule 4: emailAvailable -- Email is already taken
      * Rule 5: usernameAvailable -- Username is already taken
+     * Rule 6: validPhone -- phone number is valid
      *
      * @return array
      */
@@ -60,6 +61,8 @@ class validation {
                         break;
                     case 'match' :
                         if ($this->checkMatch($value, $rule, $match) !== true) { return; }
+                        break;
+                    case 'validPhone' :
                         break;
                 }
             }
@@ -106,6 +109,18 @@ class validation {
     private function checkEmail($value, $message)
     {
         if(!filter_var($value, FILTER_VALIDATE_EMAIL)) {
+            $this->errors [] = $message;
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    private function checkPhone($value, $message)
+    {
+        $pattern = "/^[0-9]{2}-[0-9]{4}-[0-9]{4}$/";
+
+        if(preg_match($pattern, $value)) {
             $this->errors [] = $message;
             return false;
         } else {

@@ -13,4 +13,10 @@ class home extends Controller
         $this->view('home/index');
     }
 
+    public function test()
+    {
+        return var_dump($_SESSION);
+
+    }
+
 }

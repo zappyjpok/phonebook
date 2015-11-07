@@ -67,7 +67,7 @@ class SecureSessionHandler extends SessionHandler {
     public function start()
     {
         session_start();
-        session_set_cookie_params(3600 * 24 * 7);
+        session_set_cookie_params(3600 * 24);
         session_regenerate_id();
     }
 
@@ -255,6 +255,18 @@ class SecureSessionHandler extends SessionHandler {
 
         return $length;
     }
+    /**
+     * Provides a unique login code
+     *
+     * @return string
+     */
+    public function getToken()
+    {
+        $token = $_SESSION['token'] = md5(uniqid(mt_rand(), true));
+        $this->put('token', $token);
+        return $token;
+    }
+
 
     /**
      * Sets the configuration of the sessions for the php.ini file

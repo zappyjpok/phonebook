@@ -107,7 +107,10 @@ class users extends Controller
 
         if(empty($errors)) {
             User::Add($_POST['FirstName'], $_POST['LastName'], $_POST['Username'], $_POST['Email'], $_POST['Password']);
-            $this->successAction('home/index', 'Congratulations, you created an account');
+            $message = 'Congratulations, you created an account';
+
+            $this->setMessageCookie($message);
+            $this->returnHomePage();
 
         } else {
             $this->RegistrationValidationFailed('user/create', $errors);
@@ -123,7 +126,7 @@ class users extends Controller
             $link = Links::action_link('home/index');
             header('location: ' . $link);
         }
-        $token = $this->login->getToken();
+        $token = $this->sessions->getToken();
 
         $this->view('user/login', [
             'token' => $token
@@ -154,8 +157,8 @@ class users extends Controller
                 if ($user)
                 {
                     $this->login->login($user);
-                    $sucess= "You are now logged in!";
-                    $this->successAction('home/index', $sucess);
+                    $message = "You are now logged in!";
+                    $this->successAction($message);
                 } else {
                     $error = ["Your email or password does not match our records"];
                     $this->failedLogin($error);
@@ -197,7 +200,7 @@ class users extends Controller
 
         if(empty($errors)) {
             User::edit($user['user_id'], $_POST['FirstName'], $_POST['LastName'], $_POST['Username'], $_POST['Email']);
-            $this->successAction('home/index', 'Your account has been updated');
+            $this->successAction('Your account has been updated');
 
         } else {
             $this->RegistrationValidationFailed('user/update', $errors);
@@ -206,7 +209,7 @@ class users extends Controller
 
     public function test()
     {
-        var_dump($_SESSION);
+        echo var_dump($_SESSION);
     }
 
     public function logout()
@@ -223,11 +226,10 @@ class users extends Controller
      * @param $view
      * @param $message
      */
-    private function successAction($view, $message)
+    private function successAction($message)
     {
-        $this->view($view, [
-            'success' => $message
-        ]);
+        $this->setMessageCookie($message);
+        $this->returnHomePage();
     }
 
     /**
@@ -304,6 +306,25 @@ class users extends Controller
             'email' => $_POST['Email'],
             'token' => $token
         ]);
+    }
+
+    /**
+     * Return the user to the homepage
+     */
+    private function returnHomePage()
+    {
+        $link = Links::action_link('home/index');
+        header('location: ' . $link);
+    }
+
+    /**
+     * Set a message for the user
+     *
+     * @param $message
+     */
+    private function setMessageCookie($message)
+    {
+        setcookie('success', $message, time() + 3, '/');
     }
 }
 

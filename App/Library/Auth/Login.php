@@ -84,17 +84,5 @@ class Login {
         unset($this->user_id);
         $this->logged_in = false;
     }
-
-    /**
-     * Provides a unique login code
-     *
-     * @return string
-     */
-    public function getToken()
-    {
-        $token = $_SESSION['token'] = md5(uniqid(mt_rand(), true));
-        $this->sessions->put('token', $token);
-        return $token;
-    }
 }
 

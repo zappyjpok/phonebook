@@ -18,12 +18,12 @@
     <?php } ?>
 
 <?php
-if(!is_null($data['success'])) { ?>
+if(isset($_COOKIE['success'])) { ?>
 
     <div class="alert-success">
-        <?php
-            echo "<p class='spacing'>" .  $data['success'] . "</p>";
-        ?>
+        <p class='spacing'>
+            <?php echo $_COOKIE['success'];?>
+        </p>
     </div>
-<?php } ?>
+<?php  } ?>
 </div>

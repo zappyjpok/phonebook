@@ -21,6 +21,9 @@ class Controller
     protected $login;
 
 
+    /**
+     * Every view will have a session and a login status
+     */
     public function __construct()
     {
         $sessions = new SecureSessionHandler('PhoneBook_sessions');
