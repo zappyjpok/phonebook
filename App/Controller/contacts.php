@@ -7,6 +7,7 @@
  */
 
 require_once('../App/Library/Auth/validation.php');
+require_once('../App/Library/Output/pagination.php');
 
 class contacts extends Controller
 {
@@ -35,7 +36,7 @@ class contacts extends Controller
 
     private $phone = [
         'empty' => 'Please provide your contact\'s phone number',
-        'validPhone' => 'The phone number you provided is not valid',
+        'validPhone' => 'The phone number you provided is not valid.  A phone number should resemble xx-xxxx-xxxx',
     ];
 
     /**
@@ -44,12 +45,22 @@ class contacts extends Controller
      *
      * @param $id -- user id
      */
-    public function index($id)
+    public function index($page = 1)
     {
-        $this->checkIfLoggedIn($id);
+        $this->checkIfLoggedIn();
+        $this->model('Contact');
 
+        $contacts = Contact::All($_SESSION['user']['user_id']);
 
-        $this->view('contact/index');
+        // The pagination class puts the data into chunks of 10
+        $paginated = new pagination($contacts, 10);
+        $contactsPerPage = $paginated->createPagination();
+        $count = $paginated->getRows() / 10;
+
+        $this->view('contact/index', [
+            'contacts' => $contactsPerPage[$page -1],
+            'pages' => $count
+        ]);
     }
 
     /**
@@ -75,11 +86,19 @@ class contacts extends Controller
      */
     public function store($id)
     {
+        // Check if logged in
+        $this->checkIfLoggedIn($id);
+
+        // Include the model
+        $this->model('Contact');
+
         // get all the posted values
         $fields = $this->getFields();
 
         // validate the values
         $errors = $this->validation($fields);
+
+        Contact::Add($_SESSION['user']['user_id'], $_POST['FirstName'], $_POST['LastName'], $_POST['Email'], $_POST['Phone']);
 
         if(empty($errors)) {
             $message = 'Congratulations, you created an account';
@@ -92,8 +111,6 @@ class contacts extends Controller
         }
 
 
-
-        $this->checkIfLoggedIn($id);
 
 
     }
@@ -112,15 +129,26 @@ class contacts extends Controller
         echo 'Destroy Contact';
     }
 
+
+
     public function test()
     {
-        return var_dump($_SESSION);
+        $this->model('Contact');
+        $contacts = Contact::All(15);
+
+        $paginated = new pagination($contacts, 10);
+        $page = $paginated->createPagination();
+
+        echo '<pre>';
+            print_r($page[1]);
+        echo "</pre>";
+
 
     }
 
-    private function checkIfLoggedIn($id)
+    private function checkIfLoggedIn()
     {
-        if(! $this->loggedIn || $id != (int)$_SESSION['user']['user_id'])
+        if(! $this->loggedIn)
         {
             $this->returnHomePage();
         }

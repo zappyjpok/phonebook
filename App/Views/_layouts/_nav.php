@@ -20,7 +20,7 @@
             <ul class="nav navbar-nav">
                 <li class="active"><a href="#">Home</a></li>
                 <?php  if(isset($_SESSION['user'])) { ?>
-                    <li><a href="<?php echo Links::action_link('contacts/index/' . $_SESSION['user']['user_id']);   ?>">
+                    <li><a href="<?php echo Links::action_link('contacts/index/');   ?>">
                             Contacts </a>
                     </li>
                 <?php } ?>

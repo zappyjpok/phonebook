@@ -51,7 +51,7 @@
                             <label for="Image"> Image: </label>
                         </div>
                         <div class="col-md-3">
-                            <input type="file" name="image">
+                            <input type="file" name="Image[]" multiple>
                         </div>
                         <div class="col-md-2 col-md-offset-4">
                             <input type="submit" class="btn btn-primary">

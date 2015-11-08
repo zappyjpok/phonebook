@@ -63,6 +63,7 @@ class validation {
                         if ($this->checkMatch($value, $rule, $match) !== true) { return; }
                         break;
                     case 'validPhone' :
+                        if ($this->checkPhone($value, $rule) !== true) { return; }
                         break;
                 }
             }
@@ -120,7 +121,7 @@ class validation {
     {
         $pattern = "/^[0-9]{2}-[0-9]{4}-[0-9]{4}$/";
 
-        if(preg_match($pattern, $value)) {
+        if(!preg_match($pattern, $value)) {
             $this->errors [] = $message;
             return false;
         } else {
