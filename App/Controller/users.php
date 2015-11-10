@@ -101,10 +101,11 @@ class users extends Controller
     {
         $this->model('User');
 
+        // Array of values to validate
         $fields = $this->getFields();
-
+        // List of error messages
         $errors = $this->validation($fields);
-
+        // If there are no error messages then validation passed
         if(empty($errors)) {
             User::Add($_POST['FirstName'], $_POST['LastName'], $_POST['Username'], $_POST['Email'], $_POST['Password']);
             $message = 'Congratulations, you created an account';

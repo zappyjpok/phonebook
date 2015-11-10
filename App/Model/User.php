@@ -15,6 +15,11 @@ class User {
     public $Email;
     public $Id;
 
+    /**
+     * Get all users
+     *
+     * @return mixed
+     */
     public static function All()
     {
         try{
@@ -90,6 +95,12 @@ class User {
         return $results;
     }
 
+    /**
+     * Check if email exists
+     *
+     * @param $email
+     * @return mixed
+     */
     public static function find_email_exists($email)
     {
         try {
@@ -108,6 +119,12 @@ class User {
         return $results;
     }
 
+    /**
+     * Check if a username exists
+     *
+     * @param $username
+     * @return mixed
+     */
     public static function find_username_exists($username)
     {
         try {
@@ -126,6 +143,12 @@ class User {
         return $results;
     }
 
+    /**
+     * Find a User
+     *
+     * @param $id
+     * @return mixed
+     */
     public static function find($id)
     {
         try {
@@ -143,6 +166,13 @@ class User {
         return $results;
     }
 
+    /**
+     * Check if the user's password and email match
+     *
+     * @param $email
+     * @param $password
+     * @return bool
+     */
     public static function authenticate($email, $password)
     {
         $user = User::find_by_email($email);

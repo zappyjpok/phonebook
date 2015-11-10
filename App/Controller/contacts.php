@@ -8,6 +8,8 @@
 
 require_once('../App/Library/Auth/validation.php');
 require_once('../App/Library/Output/pagination.php');
+require_once('../App/Library/Files/UploadImage.php');
+require_once('../App/Library/Files/ResizeImage.php');
 
 class contacts extends Controller
 {
@@ -40,6 +42,11 @@ class contacts extends Controller
     ];
 
     /**
+     * @var -- messages from the upload file class
+     */
+    private $uploadMessages;
+
+    /**
      * An index page containing a list of the user's contacts
      * This page will user paigination
      *
@@ -59,7 +66,8 @@ class contacts extends Controller
 
         $this->view('contact/index', [
             'contacts' => $contactsPerPage[$page -1],
-            'pages' => $count
+            'pages' => $count,
+            'page'  => $page
         ]);
     }
 
@@ -84,10 +92,10 @@ class contacts extends Controller
      *
      * @param $id
      */
-    public function store($id)
+    public function store()
     {
         // Check if logged in
-        $this->checkIfLoggedIn($id);
+        $this->checkIfLoggedIn();
 
         // Include the model
         $this->model('Contact');
@@ -98,17 +106,31 @@ class contacts extends Controller
         // validate the values
         $errors = $this->validation($fields);
 
-        Contact::Add($_SESSION['user']['user_id'], $_POST['FirstName'], $_POST['LastName'], $_POST['Email'], $_POST['Phone']);
+        // Variables needed
+        $max = 500 * 1024; //size of the image
+        $destination =  'images/contacts';
 
+        if (!empty($_FILES['Image']['name']))
+        {
+            $file = $this->uploadFile($destination, $max);
+
+            $this->sessions->put('upload', $this->uploadMessages);
+        }
+
+        $link = Links::action_link('contacts/test');
+        header('location: ' . $link);
+
+        /*
         if(empty($errors)) {
             $message = 'Congratulations, you created an account';
-
+            Contact::Add($_SESSION['user']['user_id'], $_POST['FirstName'], $_POST['LastName'], $_POST['Email'], $_POST['Phone']);
             $this->setMessageCookie($message);
             $this->returnIndexPage();
 
         } else {
             $this->RegistrationValidationFailed('contact/create', $errors);
         }
+        */
 
 
 
@@ -133,14 +155,24 @@ class contacts extends Controller
 
     public function test()
     {
-        $this->model('Contact');
-        $contacts = Contact::All(15);
+        //unset($_SESSION['upload']);
+        $destination =  'images/contacts';
+        $message = '';
 
-        $paginated = new pagination($contacts, 10);
-        $page = $paginated->createPagination();
+        if (!is_dir($destination))
+        {
+            $message = 'There is no directory';
+        } else {
+            if(is_writable($destination))
+            {
+                $message = 'The folder is writable';
+            } else {
+                $message = 'The folder is not writable';
+            }
+        }
 
         echo '<pre>';
-            print_r($page[1]);
+            print_r($_SESSION);
         echo "</pre>";
 
 
@@ -168,7 +200,7 @@ class contacts extends Controller
      */
     private function returnIndexPage()
     {
-        $link = Links::action_link('contacts/index' . $_SESSION['user']['user_id']);
+        $link = Links::action_link('contacts/index');
         header('location: ' . $link);
     }
 
@@ -235,6 +267,36 @@ class contacts extends Controller
             'phone' => $_POST['Phone'],
             'email' => $_POST['Email']
         ]);
+    }
+
+    /**
+     * Upload a file
+     *
+     * @param $destination
+     * @param $max
+     * @return string
+     * @throws \Exception
+     */
+    private function uploadFile($destination, $max)
+    {
+        try {
+            $upload = new UploadImage($destination);
+            $upload->setMaxSize($max);
+            $upload->upload();
+            $results = $upload->getMessages();
+        } catch (Exception $e) {
+            $results = $e->getMessage();
+        }
+
+        $this->uploadMessages = $results;
+
+        // Collecting the data to save into the table
+        //$fileName = $upload->getName(current($_FILES));
+        //$file = $destination . '/' . $fileName;
+
+        $file = '';
+
+        return $file;
     }
 
 }
