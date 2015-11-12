@@ -45,6 +45,7 @@ class contacts extends Controller
      * @var -- messages from the upload file class
      */
     private $uploadMessages;
+    private $noUploadErrors;
 
     /**
      * An index page containing a list of the user's contacts
@@ -284,11 +285,18 @@ class contacts extends Controller
             $upload->setMaxSize($max);
             $upload->upload();
             $results = $upload->getMessages();
+            $this->noUploadErrors= $upload->checkErrors();
         } catch (Exception $e) {
             $results = $e->getMessage();
         }
 
-        $this->uploadMessages = $results;
+        // This does not work with multiple files, but its a start: Need to change to array
+        if($this->noUploadErrors== true)
+        {
+            $this->sessions->put('uploadSuccess', $this->uploadMessages);
+        } else {
+            $this->sessions->put('uploadError', $this->uploadMessages);
+        }
 
         // Collecting the data to save into the table
         //$fileName = $upload->getName(current($_FILES));

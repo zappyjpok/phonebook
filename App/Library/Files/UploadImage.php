@@ -9,6 +9,7 @@ class UploadImage
     protected $typeCheckingOn = true;
     protected $renameDuplicates;
     protected $suffix = '.upload';
+    protected $noErrors = false;
     protected $messages = [];
     protected $permittedTypes = [
         'image/jpeg',
@@ -142,6 +143,11 @@ class UploadImage
         return $this->messages;
     }
 
+    public function checkErrors()
+    {
+        return $this->noErrors;
+    }
+
     protected function checkFile($file)
     {
         if ($file['error'] != 0) {
@@ -243,6 +249,7 @@ class UploadImage
         $success = move_uploaded_file($file['tmp_name'], $this->destination . $fileName);
         if ($success) {
             $result = $file['name'] . ' was uploaded successfully';
+            $this->noErrors = true;
             if (!is_null($this->newName)) {
                 $result .= ', and was renamed ' . $this->newName;
             }
