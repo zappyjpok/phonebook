@@ -9,7 +9,8 @@ class UploadImage
     protected $typeCheckingOn = true;
     protected $renameDuplicates;
     protected $suffix = '.upload';
-    protected $noErrors = false;
+    protected $errors = [];
+    protected $success = [];
     protected $messages = [];
     protected $permittedTypes = [
         'image/jpeg',
@@ -110,6 +111,11 @@ class UploadImage
         }
     }
 
+    /**
+     * uploads the file to the selected folder
+     *
+     * @param bool $renameDuplicates
+     */
     public function upload($renameDuplicates = true)
     {
         $this->renameDuplicates = $renameDuplicates;
@@ -138,15 +144,16 @@ class UploadImage
 
     }
 
-    public function getMessages()
+    public function getErrors()
     {
-        return $this->messages;
+        return $this->errors;
     }
 
-    public function checkErrors()
+    public function getSuccess()
     {
-        return $this->noErrors;
+        return $this->success;
     }
+
 
     protected function checkFile($file)
     {
@@ -171,17 +178,17 @@ class UploadImage
         switch($file['error']) {
             case 1:
             case 2:
-                $this->messages[] = $file['name'] . ' is too big: (max: ' .
+                $this->errors[] = $file['name'] . ' is too big: (max: ' .
                 self::convertFromBytes($this->maxSize) . ').';
                 break;
             case 3:
-                $this->messages[] = $file['name'] . ' was only partially uploaded';
+                $this->errors[] = $file['name'] . ' was only partially uploaded';
                 break;
             case 4:
-                $this->messages[] = 'No file was submitted';
+                $this->errors[] = 'No file was submitted';
                 break;
             default:
-                $this->messages[] = 'Sorry, there was a problem uploading ' . $file['name'];
+                $this->errors[] = 'Sorry, there was a problem uploading ' . $file['name'];
                 break;
         }
     }
@@ -189,10 +196,10 @@ class UploadImage
     protected function checkSize($file)
     {
         if ($file['size'] == 0) {
-            $this->messages[] = $file['name'] . ' is empty.';
+            $this->errors[] = $file['name'] . ' is empty.';
             return false;
         } else if ($file['size'] > $this->maxSize){
-            $this->messages[] = $file['name'] . ' exceeds the maximum size for a file ('
+            $this->errors[] = $file['name'] . ' exceeds the maximum size for a file ('
                 . self::convertFromBytes($this->maxSize) . ').';
             return false;
         } else {
@@ -205,7 +212,7 @@ class UploadImage
         if (in_array($file['type'], $this->permittedTypes)){
             return true;
         } else {
-            $this->messages[] = $file['name'] . ' is not a permitted type of file.';
+            $this->errors[] = $file['name'] . ' is not a permitted type of file.';
             return false;
         }
     }
@@ -249,14 +256,13 @@ class UploadImage
         $success = move_uploaded_file($file['tmp_name'], $this->destination . $fileName);
         if ($success) {
             $result = $file['name'] . ' was uploaded successfully';
-            $this->noErrors = true;
             if (!is_null($this->newName)) {
                 $result .= ', and was renamed ' . $this->newName;
             }
             $result .= '.';
-            $this->messages[] = $result;
+            $this->success[] = $result;
         } else {
-            $this->messages[] = 'Could not upload' . $file['name'];
+            $this->errors[] = 'Could not upload' . $file['name'];
         }
     }
 

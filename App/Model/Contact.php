@@ -10,6 +10,12 @@ require_once('../App/Database/PDO_Connect.php');
 
 class Contact {
 
+    /**
+     * Finds all contacts of a particular ID
+     *
+     * @param $id
+     * @return mixed
+     */
     public static function All($id)
     {
         try{
@@ -29,6 +35,16 @@ class Contact {
         return $results;
     }
 
+    /**
+     * Adds a contact to the database
+     *
+     * @param $id
+     * @param $firstName
+     * @param $lastName
+     * @param $email
+     * @param $phone
+     * @return string
+     */
     public static function Add($id, $firstName, $lastName, $email, $phone)
     {
         try{

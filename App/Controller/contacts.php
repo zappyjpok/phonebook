@@ -41,11 +41,8 @@ class contacts extends Controller
         'validPhone' => 'The phone number you provided is not valid.  A phone number should resemble xx-xxxx-xxxx',
     ];
 
-    /**
-     * @var -- messages from the upload file class
-     */
-    private $uploadMessages;
-    private $noUploadErrors;
+    private $uploadSuccessMessage;
+    private $uploadErrorMessages; 
 
     /**
      * An index page containing a list of the user's contacts
@@ -115,27 +112,24 @@ class contacts extends Controller
         {
             $file = $this->uploadFile($destination, $max);
 
-            $this->sessions->put('upload', $this->uploadMessages);
+            if(!empty($this->uploadErrorMessages))
+            {
+                $token = $this->sessions->getToken();
+                $this->view('contact/create', [
+                    'token' => $token,
+                    'errors'    => $this->uploadErrorMessages
+                ]);
+            } else if (empty($errors)) {
+                $message = 'Congratulations, you created an account';
+                Contact::Add($_SESSION['user']['user_id'], $_POST['FirstName'], $_POST['LastName'], $_POST['Email'], $_POST['Phone']);
+                $this->setMessageCookie($message);
+                $this->returnIndexPage();
+
+            } else {
+                $this->RegistrationValidationFailed('contact/create', $errors);
+            }
+
         }
-
-        $link = Links::action_link('contacts/test');
-        header('location: ' . $link);
-
-        /*
-        if(empty($errors)) {
-            $message = 'Congratulations, you created an account';
-            Contact::Add($_SESSION['user']['user_id'], $_POST['FirstName'], $_POST['LastName'], $_POST['Email'], $_POST['Phone']);
-            $this->setMessageCookie($message);
-            $this->returnIndexPage();
-
-        } else {
-            $this->RegistrationValidationFailed('contact/create', $errors);
-        }
-        */
-
-
-
-
     }
 
     public function edit($id)
@@ -284,27 +278,24 @@ class contacts extends Controller
             $upload = new UploadImage($destination);
             $upload->setMaxSize($max);
             $upload->upload();
-            $results = $upload->getMessages();
-            $this->noUploadErrors= $upload->checkErrors();
+            $this->uploadErrorMessages  = $upload->getErrors();
         } catch (Exception $e) {
-            $results = $e->getMessage();
+            $this->uploadErrorMessages = $e->getErrors();
         }
 
-        // This does not work with multiple files, but its a start: Need to change to array
-        if($this->noUploadErrors== true)
+        // check if there are no errors which will determine the type of return
+        if(empty($this->uploadErrorMessages))
         {
-            $this->sessions->put('uploadSuccess', $this->uploadMessages);
+            $this->uploadSuccessMessage = $upload->getSuccess();
+            // Collecting the data to save into the table
+            $fileName = $upload->getName(current($_FILES));
+            $file = $destination . '/' . $fileName;
+            return $file;
         } else {
-            $this->sessions->put('uploadError', $this->uploadMessages);
+            return false;
         }
 
-        // Collecting the data to save into the table
-        //$fileName = $upload->getName(current($_FILES));
-        //$file = $destination . '/' . $fileName;
 
-        $file = '';
-
-        return $file;
     }
 
 }
