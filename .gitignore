@@ -6,6 +6,6 @@ bower_components
 .tmp
 .sass-cache
 .log
-.jpeg
+*.jpeg
 
 builds/**/images/*

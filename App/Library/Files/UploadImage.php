@@ -11,7 +11,7 @@ class UploadImage
     protected $suffix = '.upload';
     protected $errors = [];
     protected $success = [];
-    protected $messages = [];
+    protected $fileNames = [];
     protected $permittedTypes = [
         'image/jpeg',
         'image/pjpeg',
@@ -144,17 +144,38 @@ class UploadImage
 
     }
 
+
+    public function getName()
+    {
+        return $this->fileNames;
+    }
+
+    /**
+     * Returns an array of errors
+     *
+     * @return array
+     */
     public function getErrors()
     {
         return $this->errors;
     }
 
+    /**
+     * Returns a success message
+     *
+     * @return array
+     */
     public function getSuccess()
     {
         return $this->success;
     }
 
-
+    /**
+     * Check the upload file or files for errors
+     *
+     * @param $file
+     * @return bool
+     */
     protected function checkFile($file)
     {
         if ($file['error'] != 0) {
@@ -173,6 +194,11 @@ class UploadImage
         return true;
     }
 
+    /**
+     * Create error messages
+     *
+     * @param $file
+     */
     protected function getErrorMessage($file)
     {
         switch($file['error']) {
@@ -193,6 +219,12 @@ class UploadImage
         }
     }
 
+    /**
+     * Checks the file size
+     *
+     * @param $file
+     * @return bool
+     */
     protected function checkSize($file)
     {
         if ($file['size'] == 0) {
@@ -207,6 +239,12 @@ class UploadImage
         }
     }
 
+    /**
+     * Checks if the file submitted is permitted
+     *
+     * @param $file
+     * @return bool
+     */
     protected function checkType($file)
     {
         if (in_array($file['type'], $this->permittedTypes)){
@@ -217,6 +255,11 @@ class UploadImage
         }
     }
 
+    /**
+     * Checks the name to prevent duplication
+     *
+     * @param $file
+     */
     protected function checkName($file)
     {
         $this->newName = null;
@@ -256,6 +299,7 @@ class UploadImage
         $success = move_uploaded_file($file['tmp_name'], $this->destination . $fileName);
         if ($success) {
             $result = $file['name'] . ' was uploaded successfully';
+            $this->fileNames [] = $fileName;
             if (!is_null($this->newName)) {
                 $result .= ', and was renamed ' . $this->newName;
             }
@@ -266,10 +310,6 @@ class UploadImage
         }
     }
 
-    public function getName($file)
-    {
-        $name = isset($this->newName) ? $this->newName : $file['name'];
-        return $name;
-    }
+
 
 }

@@ -12,14 +12,32 @@ require('../ENV.php');
 class PDO_Connect
 {
 
+    /**
+     * @var string -- list of database variable
+     */
     private $host = DB_SERVER;
     private $user = DB_USER;
     private $password = DB_PASS;
     private $dbName = DB_NAME;
 
+    /**
+     * @var PDO -- the database object
+     */
     private $db;
+
+    /**
+     * @var bool -- check if database connection was established
+     */
     private $connected = false;
+
+    /**
+     * @var array -- an array of error messages
+     */
     private $errors = [];
+
+    /**
+     * @var -- the query statement
+     */
     private $stmt;
 
     public function __construct()
@@ -32,7 +50,7 @@ class PDO_Connect
             PDO::ATTR_PERSISTENT => true,
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
         ];
-        //
+        // establish a connection to the database
         try {
             $this->db = new PDO($dsn, $this->user, $this->password, $options);
         } catch (Exception $e) {
@@ -40,11 +58,21 @@ class PDO_Connect
         }
     }
 
+    /**
+     * Send query to database
+     *
+     * @param $query
+     */
     public function query($query)
     {
         $this->stmt = $this->db->query($query);
     }
 
+    /**
+     * Prepare a query to go to the database
+     *
+     * @param $query
+     */
     public function prepare($query)
     {
         $this->stmt = $this->db->prepare($query);
@@ -70,7 +98,9 @@ class PDO_Connect
     }
 
     public function execute(){
-        return $this->stmt->execute();
+        $this->stmt->execute();
+        $results = $this->stmt->fetchAll(PDO::FETCH_ASSOC);
+        $this->id = $results;
     }
 
     public function result_set(){
@@ -80,7 +110,6 @@ class PDO_Connect
 
     public function single(){
         $this->execute();
-        return $this->stmt->fetch(PDO::FETCH_ASSOC);
     }
 
     public function rowCount(){
@@ -88,7 +117,7 @@ class PDO_Connect
     }
 
     public function lastInsertId(){
-        return $this->dbh->lastInsertId();
+        return $this->db->lastInsertId();
     }
 
     private function test_database()
@@ -119,5 +148,6 @@ class PDO_Connect
         $this->test_statement();
         return $this->errors;
     }
+
 }
 

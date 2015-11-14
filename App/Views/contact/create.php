@@ -14,7 +14,7 @@
             <p> Fill out the form below and click submit </p>
         </article>
         <div class="panel-body">
-            <form action="<?php echo Links::action_link('contacts/store/' . $_SESSION['user']['user_id']); ?>" method="post" enctype="multipart/form-data">
+            <form action="<?php echo Links::action_link('contacts/store/'); ?>" method="post" enctype="multipart/form-data">
                 <input type="hidden" value="<?php echo $data['token']; ?>">
                 <div class="row form-group">
                     <div class="col-md-2 col-md-offset-1">

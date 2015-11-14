@@ -61,7 +61,7 @@ class Contact {
         } catch (Exception $e) {
             $error = $e->getMessage();
         }
-        return $error;
+        return $db->lastInsertId();
     }
 
 

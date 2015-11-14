@@ -6,6 +6,7 @@
  * Time: 3:54 PM
  */
 
+require_once('../App/Model/Image.php');
 require_once('../App/Library/Auth/validation.php');
 require_once('../App/Library/Output/pagination.php');
 require_once('../App/Library/Files/UploadImage.php');
@@ -42,7 +43,12 @@ class contacts extends Controller
     ];
 
     private $uploadSuccessMessage;
-    private $uploadErrorMessages; 
+    private $uploadErrorMessages;
+
+    /**
+     * @var -- file names to place in the database
+     */
+    private $files = [];
 
     /**
      * An index page containing a list of the user's contacts
@@ -110,23 +116,27 @@ class contacts extends Controller
 
         if (!empty($_FILES['Image']['name']))
         {
-            $file = $this->uploadFile($destination, $max);
+            // The name of the file or files uploaded
+            $files = $this->uploadFile($destination, $max);
 
-            if(!empty($this->uploadErrorMessages))
+            if(!empty($this->uploadErrorMessages)  || !empty($errors))
             {
-                $token = $this->sessions->getToken();
-                $this->view('contact/create', [
-                    'token' => $token,
-                    'errors'    => $this->uploadErrorMessages
-                ]);
-            } else if (empty($errors)) {
+                $allErrors = array_merge($this->uploadErrorMessages, $errors);
+                $this->ValidationFailed('contact/create', $allErrors);
+
+            } else {
                 $message = 'Congratulations, you created an account';
-                Contact::Add($_SESSION['user']['user_id'], $_POST['FirstName'], $_POST['LastName'], $_POST['Email'], $_POST['Phone']);
+                $id = Contact::Add($_SESSION['user']['user_id'], $_POST['FirstName'], $_POST['LastName'], $_POST['Email'], $_POST['Phone']);
+                foreach($this->files as $file)
+                {
+                    // Add contact ID and file name
+                    Image::Add($id, $file);
+                    // resize the files
+                }
+
                 $this->setMessageCookie($message);
                 $this->returnIndexPage();
 
-            } else {
-                $this->RegistrationValidationFailed('contact/create', $errors);
             }
 
         }
@@ -253,10 +263,12 @@ class contacts extends Controller
      * @param $view
      * @param $errors
      */
-    private function RegistrationValidationFailed($view, $errors)
+    private function ValidationFailed($view, $errors)
     {
+        $token = $this->sessions->getToken();
         $this->view($view, [
             'errors' => $errors,
+            'token' => $token,
             'firstName' => $_POST['FirstName'],
             'lastName' => $_POST['LastName'],
             'phone' => $_POST['Phone'],
@@ -288,14 +300,13 @@ class contacts extends Controller
         {
             $this->uploadSuccessMessage = $upload->getSuccess();
             // Collecting the data to save into the table
-            $fileName = $upload->getName(current($_FILES));
-            $file = $destination . '/' . $fileName;
-            return $file;
-        } else {
-            return false;
+            $fileNames = $upload->getName();
+
+            foreach($fileNames as $fileName)
+            {
+                $this->files [] = $destination . '/' . $fileName;
+            }
         }
-
-
     }
 
 }
