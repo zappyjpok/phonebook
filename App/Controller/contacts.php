@@ -6,7 +6,6 @@
  * Time: 3:54 PM
  */
 
-require_once('../App/Model/Image.php');
 require_once('../App/Library/Auth/validation.php');
 require_once('../App/Library/Output/pagination.php');
 require_once('../App/Library/Files/UploadImage.php');
@@ -68,10 +67,13 @@ class contacts extends Controller
         $contactsPerPage = $paginated->createPagination();
         $count = $paginated->getRows() / 10;
 
+        $token = $this->sessions->getToken();
+
         $this->view('contact/index', [
             'contacts' => $contactsPerPage[$page -1],
             'pages' => $count,
-            'page'  => $page
+            'page'  => $page,
+            'token' => $token
         ]);
     }
 
@@ -103,6 +105,7 @@ class contacts extends Controller
 
         // Include the model
         $this->model('Contact');
+        $this->model('Image');
 
         // get all the posted values
         $fields = $this->getFields();
@@ -117,7 +120,7 @@ class contacts extends Controller
         if (!empty($_FILES['Image']['name']))
         {
             // The name of the file or files uploaded
-            $files = $this->uploadFile($destination, $max);
+            $this->uploadFile($destination, $max);
 
             if(!empty($this->uploadErrorMessages)  || !empty($errors))
             {
@@ -125,61 +128,103 @@ class contacts extends Controller
                 $this->ValidationFailed('contact/create', $allErrors);
 
             } else {
-                $message = 'Congratulations, you created an account';
-                $id = Contact::Add($_SESSION['user']['user_id'], $_POST['FirstName'], $_POST['LastName'], $_POST['Email'], $_POST['Phone']);
-                foreach($this->files as $file)
-                {
-                    // Add contact ID and file name
-                    Image::Add($id, $file);
-                    // resize the files
-                }
-
-                $this->setMessageCookie($message);
-                $this->returnIndexPage();
-
+                $this->updateImages('Congratulations, you created an account');
             }
 
         }
     }
 
-    public function edit($id)
+    public function edit()
     {
-        $this->checkIfLoggedIn($id);
+        $this->checkIfLoggedIn();
 
         echo 'Edit Contact';
+
     }
 
-    public function destroy($id)
+    public function destroy()
     {
-        $this->checkIfLoggedIn($id);
+        $this->checkIfLoggedIn();
 
-        echo 'Destroy Contact';
+        // Get all images associated with the contact
+        $this->model('Image');
+        $this->model('Contact');
+        $images = Image::All($_POST['ID']);
+
+        // Delete all images
+        foreach($images as $image)
+        {
+            unlink($image['imgPath']);
+            unlink(Links::changeToThumbnail($image['imgPath']));
+        }
+        // Delete Contact
+        Contact::delete($_POST['ID']);
+        $this->returnIndexPage();
     }
 
+    /**
+     * Users select what image is the main image
+     */
+    public function selectImage()
+    {
+        $this->checkIfLoggedIn();
+        // Get the id
+        $id = $this->sessions->withdrawl('contact_id');
+
+        // Check if was redirected from the store
+        $token = $this->sessions->withdrawl('token');
+        $cookieToken = $_COOKIE['token'];
+
+
+        if($token !== $cookieToken && is_null($cookieToken))
+        {
+            $this->returnIndexPage();
+        } else {
+            // Get all images
+            $this->model('Image');
+            $images = Image::All($id);
+            // Get token for new form
+            $token = $this->sessions->getToken();
+
+            $this->view('contact/selectImage', [
+                'id'    => $id,
+                'images' => $images,
+                'token' => $token
+            ]);
+        }
+    }
+
+    public function imageStore()
+    {
+        $this->checkIfLoggedIn();
+        if(!is_null($_POST['radio']))
+        {
+            if($this->sessions->withdrawl('token') === $_POST['token'])
+            {
+                $this->model('Image');
+                Image::AddMain($_POST['ID'], $_POST['radio']);
+
+                $this->setMessageCookie('You have selected your image');
+                $this->returnIndexPage();
+            }
+        } else {
+            $this->model('Image');
+            $images = Image::All($_POST['ID']);
+            $token = $this->sessions->getToken();
+            $errors = ['Please select an image'];
+
+            $this->view('contact/selectImage', [
+                'errors' => $errors,
+                'id'    => $_POST['ID'],
+                'images' => $images,
+                'token' => $token
+            ]);
+        }
+    }
 
 
     public function test()
     {
-        //unset($_SESSION['upload']);
-        $destination =  'images/contacts';
-        $message = '';
-
-        if (!is_dir($destination))
-        {
-            $message = 'There is no directory';
-        } else {
-            if(is_writable($destination))
-            {
-                $message = 'The folder is writable';
-            } else {
-                $message = 'The folder is not writable';
-            }
-        }
-
-        echo '<pre>';
-            print_r($_SESSION);
-        echo "</pre>";
-
 
     }
 
@@ -191,23 +236,7 @@ class contacts extends Controller
         }
     }
 
-    /**
-     * Return the user to the homepage
-     */
-    private function returnHomePage()
-    {
-        $link = Links::action_link('home/index');
-        header('location: ' . $link);
-    }
 
-    /**
-     * Return to the home page
-     */
-    private function returnIndexPage()
-    {
-        $link = Links::action_link('contacts/index');
-        header('location: ' . $link);
-    }
 
     /**
      * Validations for the input fields
@@ -307,6 +336,64 @@ class contacts extends Controller
                 $this->files [] = $destination . '/' . $fileName;
             }
         }
+    }
+
+    /**
+     * uploads a file and adds them to the database
+     *
+     * @param $message
+     */
+    private function updateImages($message)
+    {
+        $id = Contact::Add($_SESSION['user']['user_id'], $_POST['FirstName'], $_POST['LastName'], $_POST['Email'], $_POST['Phone']);
+        foreach($this->files as $file)
+        {
+            // Add contact ID and file name
+            Image::Add($id, $file);
+            // resize the files
+            $resize = new \App\library\ResizeImage($file, 400, 400);
+            $resize->createResizeImage();
+            $resize->createThumbNail(200, 200);
+        }
+
+        $this->setMessageCookie($message);
+        $this->returnSelectImagePage($id);
+    }
+
+    /**
+     * Return the user to the homepage
+     */
+    private function returnHomePage()
+    {
+        $link = Links::action_link('home/index');
+        header('location: ' . $link);
+    }
+
+    /**
+     * Return to the home page
+     */
+    private function returnIndexPage()
+    {
+        $link = Links::action_link('contacts/index');
+        header('location: ' . $link);
+    }
+
+    /**
+     * Passes the ID to the next page and opens the select Image page
+     *
+     * @param $id
+     */
+    private function returnSelectImagePage($id)
+    {
+        // Pass the contact ID to the next page
+        $this->sessions->put('contact_id', $id);
+        // Create a token for the next page
+        $token = $this->sessions->getToken();
+        setcookie('token', $token, time() + 10, '/');
+
+        // go to the select image page with variables
+        $link = Links::action_link('contacts/selectImage');
+        header('location: ' . $link);
     }
 
 }

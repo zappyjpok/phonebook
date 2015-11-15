@@ -7900,6 +7900,9 @@ button.close {
 .spacing {
   text-align: center; }
 
+.top-buffer-15 {
+  margin-top: 15px; }
+
 #tooltip_container {
   color: #ffffff;
   position: absolute;

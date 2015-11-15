@@ -77,6 +77,23 @@ class User {
         }
     }
 
+    public static function editPassword($id, $password)
+    {
+        $pass = password_hash($password, PASSWORD_DEFAULT);
+        try {
+            $sql = 'UPDATE tblUser
+                    SET usePassword = :password,
+                    WHERE useUserID = :ID';
+            $db = new PDO_Connect();
+            $db->prepare($sql);
+            $db->bind(':ID', $id);
+            $db->bind(':FirstName', $pass);
+            $db->execute();
+        } catch (Exception $e) {
+            $error = $e->getMessage();
+        }
+    }
+
     public static function find_by_email($email)
     {
         try {

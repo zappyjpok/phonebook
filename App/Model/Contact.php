@@ -19,9 +19,13 @@ class Contact {
     public static function All($id)
     {
         try{
-            $sql = "SELECT *
+            $sql = "SELECT tblContact.conContactID, tblContact.conUserID, tblContact.conFirstName, tblContact.conLastName,
+                    tblContact.conPhone, tblContact.conEmail, tblImage.imgPath, tblImage.imgMain
                     FROM tblContact
-                    WHERE conUserID = :id";
+                    LEFT JOIN tblImage
+                    ON tblContact.conContactID = tblImage.imgContactID
+                    WHERE conUserID = :id
+                    AND imgMain = TRUE";
             $db = new PDO_Connect();
             $db->prepare($sql);
             $db->bind(':id', $id);
@@ -64,6 +68,18 @@ class Contact {
         return $db->lastInsertId();
     }
 
-
+    public static function delete($id)
+    {
+        try{
+            $sql = 'DELETE FROM tblContact
+                    WHERE conContactID = :ID';
+            $db = new PDO_Connect();
+            $db->prepare($sql);
+            $db->bind(':ID', $id);
+            $db->execute();
+        } catch (Exception $e) {
+            $error = $e->getMessage();
+        }
+    }
 
 }

@@ -1,9 +1,9 @@
 <?php
 /**
- * Created by PhpStorm.
- * user: thuyshawn
- * Date: 30/08/2015
- * Time: 3:22 PM
+ * This class was modeled after the PDO class on cultt.com
+ * Some alterations were made, but the full version of the class
+ * is at http://culttt.com/2012/10/01/roll-your-own-pdo-php-class/
+ *
  */
 
 require('../ENV.php');
@@ -40,6 +40,9 @@ class PDO_Connect
      */
     private $stmt;
 
+    /**
+     * Set up the database and check the connection
+     */
     public function __construct()
     {
         // Set DSN
@@ -98,9 +101,7 @@ class PDO_Connect
     }
 
     public function execute(){
-        $this->stmt->execute();
-        $results = $this->stmt->fetchAll(PDO::FETCH_ASSOC);
-        $this->id = $results;
+        return $this->stmt->execute();
     }
 
     public function result_set(){
@@ -110,6 +111,7 @@ class PDO_Connect
 
     public function single(){
         $this->execute();
+        return $this->stmt->fetch(PDO::FETCH_ASSOC);
     }
 
     public function rowCount(){

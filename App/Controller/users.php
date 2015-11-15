@@ -210,7 +210,16 @@ class users extends Controller
 
     public function test()
     {
-        echo var_dump($_SESSION);
+        $this->model('User');
+        $check = User::find_email_exists('walker@gmail.com');
+        $checkUserName = User::find_username_exists('tommyboy');
+        $users = User::find('1');
+
+        var_dump($check);
+        echo '<br>';
+        var_dump($checkUserName);
+        echo '<br>';
+        var_dump($users);
     }
 
     public function logout()
@@ -301,7 +310,7 @@ class users extends Controller
 
     private function failedLogin($message)
     {
-        $token = $this->login->getToken();
+        $token = $this->sessions->getToken();
         $this->view('user/login', [
             'errors' => $message,
             'email' => $_POST['Email'],

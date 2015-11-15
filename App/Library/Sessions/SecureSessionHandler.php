@@ -202,6 +202,19 @@ class SecureSessionHandler extends SessionHandler {
     }
 
     /**
+     * Deletes session when withdrawing
+     *
+     * @param $name
+     * @return mixed
+     */
+    public function withdrawl($name)
+    {
+        $session = $_SESSION[$name];
+        unset($_SESSION[$name]);
+        return $session;
+    }
+
+    /**
      * Adds a session value that deletes the old one
      *
      * @param $name
