@@ -10,7 +10,9 @@ class Output {
 
     public static function phpOutput($string)
     {
-        return htmlentities($string);
+        $output = filter_var(trim($string), FILTER_SANITIZE_STRING);
+        $output = filter_var($output, FILTER_SANITIZE_SPECIAL_CHARS);
+        return $output;
     }
 
     public static function phpPrice($price)

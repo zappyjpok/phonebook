@@ -275,7 +275,7 @@ class SecureSessionHandler extends SessionHandler {
      */
     public function getToken()
     {
-        $token = $_SESSION['token'] = md5(uniqid(mt_rand(), true));
+        $token = md5(uniqid(mt_rand(), true));
         $this->put('token', $token);
         return $token;
     }

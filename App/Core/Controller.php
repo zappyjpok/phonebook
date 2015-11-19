@@ -68,5 +68,53 @@ class Controller
         require_once('../App/Views/' . $view . '.php');
     }
 
+    /**
+     * Redirects the user to a different page
+     *
+     * @param $view
+     */
+    protected function redirectTo($view)
+    {
+        $link = Links::action_link($view);
+        header('location: ' . $link);
+    }
+    /**
+     * Set a message for the user
+     *
+     * @param $message
+     */
+    protected function setMessageCookie($name, $message)
+    {
+        setcookie($name, $message, time() + 3, '/');
+    }
+
+    /**
+     * Redirects with an error message if false
+     *
+     * @param $test
+     * @param $view
+     * @param $message
+     */
+    protected function checkSecurityValue($test, $view, $message)
+    {
+        if($test === false)
+        {
+            $this->setMessageCookie('error', $message);
+            $this->redirectTo($view);
+        }
+    }
+
+    /**
+     * Check if the user is logged in
+     * If not they are redirected to the homepage
+     */
+    protected function checkIfLoggedIn()
+    {
+        if(! $this->loggedIn)
+        {
+            $this->redirectTo('home/index');
+        }
+    }
+
 }
 

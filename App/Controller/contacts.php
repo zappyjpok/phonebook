@@ -82,15 +82,72 @@ class contacts extends Controller
      *
      * @param $id
      */
-    public function create($id)
+    public function create()
     {
-        $this->checkIfLoggedIn($id);
+        // Check if logged in
+        $this->checkIfLoggedIn();
+
         // token to protect against cross site attacks
         $token =$this->sessions->getToken();
 
         $this->view('contact/create', [
             'token' => $token
         ]);
+    }
+
+    /**
+     * Show contacts information
+     *
+     * @param $id
+     */
+    public function show($id)
+    {
+        // check if user is logged in
+        $this->checkIfLoggedIn();
+        $id =  Output::phpOutput($id);
+
+        // Get models
+        $this->model('Contact');
+        $this->model('Image');
+
+        // Security check make sure record belongs to user
+        $belongsTo = Contact::checkContactUser($_SESSION['user']['user_id'], $id);
+        $this->checkSecurityValue($belongsTo, 'contacts/index', 'Something went wrong, please try again');
+
+        // Get contact information
+        $contact = Contact::findAll($id);
+        $main = Image::getMain($id);
+
+        $this->view('contact/show', [
+            'main' => $main[0]['imgPath'],
+            'contact' => $contact
+        ]);
+    }
+
+    public function search($page = 1, $search)
+    {
+        // check if user is logged in
+        $this->checkIfLoggedIn();
+        $search = Output::phpOutput($search);
+
+        // Get models
+        $this->model('Contact');
+        $contacts = Contact::search($search);
+
+        // The pagination class puts the data into chunks of 10
+        $paginated = new pagination($contacts, 10);
+        $contactsPerPage = $paginated->createPagination();
+        $count = $paginated->getRows() / 10;
+
+        $token = $this->sessions->getToken();
+
+        $this->view('contact/search', [
+            'contacts' => $contacts,
+            'pages' => $count,
+            'page'  => $page,
+            'token' => $token
+        ]);
+
     }
 
     /**
@@ -102,6 +159,9 @@ class contacts extends Controller
     {
         // Check if logged in
         $this->checkIfLoggedIn();
+
+        // Check if tokens match
+        $this->checkTokensMatched($this->sessions->withdrawl('token'), Output::phpOutput($_POST['token']));
 
         // Include the model
         $this->model('Contact');
@@ -117,34 +177,101 @@ class contacts extends Controller
         $max = 500 * 1024; //size of the image
         $destination =  'images/contacts';
 
-        if (!empty($_FILES['Image']['name']))
+
+        // The name of the file or files uploaded
+        $this->uploadFile($destination, $max);
+
+        if(!empty($this->uploadErrorMessages)  || !empty($errors))
         {
-            // The name of the file or files uploaded
-            $this->uploadFile($destination, $max);
+            $allErrors = array_merge($this->uploadErrorMessages, $errors);
+            $this->ValidationFailed('contact/create', $allErrors);
 
-            if(!empty($this->uploadErrorMessages)  || !empty($errors))
-            {
-                $allErrors = array_merge($this->uploadErrorMessages, $errors);
-                $this->ValidationFailed('contact/create', $allErrors);
-
-            } else {
-                $this->updateImages('Congratulations, you created an account');
-            }
-
+        } else {
+            $id = Contact::Add(Output::phpOutput($_SESSION['user']['user_id']),
+                Output::phpOutput($_POST['FirstName']),
+                Output::phpOutput($_POST['LastName']),
+                Output::phpOutput($_POST['Email']),
+                Output::phpOutput( $_POST['Phone']));
+            $this->updateImages('Congratulations, you created xa contact', $id);
         }
     }
 
-    public function edit()
+    /**
+     * Edit a contact
+     *
+     * @param $id
+     */
+    public function edit($id)
     {
+        // Check if logged in
         $this->checkIfLoggedIn();
 
-        echo 'Edit Contact';
+        // Get contact information
+        $this->model('Contact');
+        $contact = Contact::find(Output::phpOutput($id));
+
+        // Token for form
+        $token =$this->sessions->getToken();
+
+        $this->view('contact/edit', [
+            'token' => $token,
+            'contact'   => $contact,
+            'ID'    => $contact['conContactID'],
+            'firstName' => $contact['conFirstName'],
+            'lastName' => $contact['conLastName'],
+            'phone' => $contact['conPhone'],
+            'email' => $contact['conEmail']
+        ]);
 
     }
 
+    public function update()
+    {
+        //check if contact belongs to user
+        $this->model('Contact');
+        // Security check make sure record belongs to user
+        $belongsTo = Contact::checkContactUser($_SESSION['user']['user_id'], Output::phpOutput($_POST['ID']));
+        $this->checkSecurityValue($belongsTo, 'contacts/index', 'Something went wrong, please try again');
+
+        // Check if logged in
+        $this->checkIfLoggedIn();
+        // Check if tokens match
+        $this->checkTokensMatched($this->sessions->withdrawl('token'), Output::phpOutput($_POST['token']));
+
+        // get all the posted values
+        $fields = $this->getFields();
+
+        // validate the values
+        $errors = $this->validation($fields);
+
+        if(!empty($errors))
+        {
+            $this->ValidationFailed('contact/create', $errors);
+        } else {
+            Contact::edit(Output::phpOutput($_POST['ID']), Output::phpOutput($_POST['FirstName']),
+            Output::phpOutput($_POST['LastName']), Output::phpOutput($_POST['Phone']),
+            Output::phpOutput($_POST['Email']));
+            $this->setMessageCookie('success', 'You updated a contact');
+            $this->redirectTo('contacts/photos/' . Output::phpOutput($_POST['ID']));
+        }
+
+    }
+
+
+    /**
+     * Processes a delete request
+     */
     public function destroy()
     {
+        //check if contact belongs to user
+        $this->model('Contact');
+        $belongsTo = Contact::checkContactUser($_SESSION['user']['user_id'], Output::phpOutput($_POST['ID']));
+        $this->checkSecurityValue($belongsTo, 'contacts/index', 'Something went wrong, please try again');
+
+        // check if logged in
         $this->checkIfLoggedIn();
+        // Check if tokens match
+        $this->checkTokensMatched($this->sessions->withdrawl('token'), Output::phpOutput($_POST['token']));
 
         // Get all images associated with the contact
         $this->model('Image');
@@ -159,7 +286,8 @@ class contacts extends Controller
         }
         // Delete Contact
         Contact::delete($_POST['ID']);
-        $this->returnIndexPage();
+        $this->setMessageCookie('success', 'You deleted a contact');
+        $this->redirectTo('contacts/index');
     }
 
     /**
@@ -167,49 +295,46 @@ class contacts extends Controller
      */
     public function selectImage()
     {
+        // check if logged in
         $this->checkIfLoggedIn();
-        // Get the id
+
+        // Get id
         $id = $this->sessions->withdrawl('contact_id');
 
-        // Check if was redirected from the store
-        $token = $this->sessions->withdrawl('token');
-        $cookieToken = $_COOKIE['token'];
+        // Get all images
+        $this->model('Image');
+        $images = Image::All($id);
+        // Get token for new form
+        $token = $this->sessions->getToken();
 
+        $this->view('contact/selectImage', [
+            'id'    => $id,
+            'images' => $images,
+            'token' => $token
+        ]);
 
-        if($token !== $cookieToken && is_null($cookieToken))
-        {
-            $this->returnIndexPage();
-        } else {
-            // Get all images
-            $this->model('Image');
-            $images = Image::All($id);
-            // Get token for new form
-            $token = $this->sessions->getToken();
-
-            $this->view('contact/selectImage', [
-                'id'    => $id,
-                'images' => $images,
-                'token' => $token
-            ]);
-        }
     }
 
+    /**
+     * Adds images to the database 
+     */
     public function imageStore()
     {
         $this->checkIfLoggedIn();
+        // Check if tokens match
+        $this->checkTokensMatched($this->sessions->withdrawl('token'), Output::phpOutput($_POST['token']));
+
         if(!is_null($_POST['radio']))
         {
-            if($this->sessions->withdrawl('token') === $_POST['token'])
-            {
-                $this->model('Image');
-                Image::AddMain($_POST['ID'], $_POST['radio']);
+            $this->model('Image');
+            Image::AddMain(Output::phpOutput($_POST['ID']), Output::phpOutput($_POST['radio']));
 
-                $this->setMessageCookie('You have selected your image');
-                $this->returnIndexPage();
-            }
+            $this->setMessageCookie('success', 'You have selected your main image');
+            $this->redirectTo('contacts/index');
+
         } else {
             $this->model('Image');
-            $images = Image::All($_POST['ID']);
+            $images = Image::All(Output::phpOutput($_POST['ID']));
             $token = $this->sessions->getToken();
             $errors = ['Please select an image'];
 
@@ -222,89 +347,64 @@ class contacts extends Controller
         }
     }
 
-
-    public function test()
+    /**
+     * Users can add more photos
+     */
+    public function photos($id)
     {
+        // Check if logged in
+        $this->checkIfLoggedIn();
+        // Create a token
+        $token = $this->sessions->getToken();
 
+        $this->view('contact/addPhoto' ,[
+            'token' => $token,
+            'id'    => Output::phpOutput($id)
+        ]);
     }
 
-    private function checkIfLoggedIn()
+    /**
+     * Add photos
+     */
+    public function addPhotos()
     {
-        if(! $this->loggedIn)
+        // Check if logged in
+        $this->checkIfLoggedIn();
+        // Check if the user belongs to the photos
+        $this->model('Contact');
+        $contactID = Output::phpOutput($_POST['id']);
+        $belongsTo = Contact::checkContactUser($_SESSION['user']['user_id'], $contactID);
+        $this->checkSecurityValue($belongsTo, 'contacts/index', 'Something went wrong, please try again');
+
+        // Check if tokens match
+        $this->checkTokensMatched($this->sessions->withdrawl('token'), Output::phpOutput($_POST['token']));
+
+        // Include the model
+        $this->model('Image');
+
+        // Variables needed
+        $max = 500 * 1024; //size of the image
+        $destination =  'images/contacts';
+
+        // The name of the file or files uploaded
+        $this->uploadFile($destination, $max);
+
+
+        if(!empty($this->uploadErrorMessages))
         {
-            $this->returnHomePage();
+            $this->sessions->put('errors', $this->uploadErrorMessages);
+            $this->sessions->put('test', 'test test test');
+            $this->redirectTo('contacts/photos/' . $contactID);
+
+        } else {
+            $this->sessions->put('contact_id', $contactID);
+            $this->updateImages('Congratulations, you added photos', $contactID);
         }
     }
 
 
 
-    /**
-     * Validations for the input fields
-     * View = 0 -- create page
-     * View = 1 -- update page
-     *
-     * @param $fields
-     * @return array
-     */
-    private function validation($fields, $view = 0)
-    {
-        $validate = new validation();
-        if(isset($fields['Fname'])) { $validate->validate($fields['Fname'], $this->firstName); }
-        if(isset($fields['Lname'])) { $validate->validate($fields['Lname'], $this->lastName); }
-        if(isset($fields['email'])) {  $validate->validate($fields['email'], $this->email); }
-        if(isset($fields['phone'])) {  $validate->validate($fields['phone'], $this->phone); }
-
-        $errors = $validate->getErrors();
-
-        return $errors;
-    }
-
-    /**
-     * Get's an array of values to validate
-     *
-     * @return array
-     */
-    private function getFields()
-    {
-        $fields = [
-            'Fname' => $_POST['FirstName'],
-            'Lname' => $_POST['LastName'],
-            'email'     => $_POST['Email'],
-            'phone'  => $_POST['Phone'],
-        ];
-
-        return $fields;
-    }
-
-    /**
-     * Set a message for the user
-     *
-     * @param $message
-     */
-    private function setMessageCookie($message)
-    {
-        setcookie('success', $message, time() + 3, '/');
-    }
-
-    /**
-     * Returns the view with posted valies
-     *
-     * @param $view
-     * @param $errors
-     */
-    private function ValidationFailed($view, $errors)
-    {
-        $token = $this->sessions->getToken();
-        $this->view($view, [
-            'errors' => $errors,
-            'token' => $token,
-            'firstName' => $_POST['FirstName'],
-            'lastName' => $_POST['LastName'],
-            'phone' => $_POST['Phone'],
-            'email' => $_POST['Email']
-        ]);
-    }
-
+    // Images Functions
     /**
      * Upload a file
      *
@@ -343,9 +443,8 @@ class contacts extends Controller
      *
      * @param $message
      */
-    private function updateImages($message)
+    private function updateImages($message, $id)
     {
-        $id = Contact::Add($_SESSION['user']['user_id'], $_POST['FirstName'], $_POST['LastName'], $_POST['Email'], $_POST['Phone']);
         foreach($this->files as $file)
         {
             // Add contact ID and file name
@@ -356,26 +455,8 @@ class contacts extends Controller
             $resize->createThumbNail(200, 200);
         }
 
-        $this->setMessageCookie($message);
+        $this->setMessageCookie('success', $message);
         $this->returnSelectImagePage($id);
-    }
-
-    /**
-     * Return the user to the homepage
-     */
-    private function returnHomePage()
-    {
-        $link = Links::action_link('home/index');
-        header('location: ' . $link);
-    }
-
-    /**
-     * Return to the home page
-     */
-    private function returnIndexPage()
-    {
-        $link = Links::action_link('contacts/index');
-        header('location: ' . $link);
     }
 
     /**
@@ -392,8 +473,89 @@ class contacts extends Controller
         setcookie('token', $token, time() + 10, '/');
 
         // go to the select image page with variables
-        $link = Links::action_link('contacts/selectImage');
-        header('location: ' . $link);
+        $this->redirectTo('contacts/selectImage');
     }
 
+    // Security Functions
+
+    /**
+     * if the site detects suspicious activity
+     */
+    private function stopSecurityViolation()
+    {
+        $this->setMessageCookie('error', 'Something went wrong please try again!');
+        $this->redirectTo('contacts/index');
+    }
+
+    /**
+     * Check if tokens match.  If they don't return to the index form
+     *
+     * @param $token
+     * @param $sessionToken
+     */
+    private function checkTokensMatched($token, $sessionToken)
+    {
+        if($token !== $sessionToken)
+        {
+            $this->setMessageCookie('error', 'Something went wrong please try again!');
+            $this->redirectTo('contacts/index');
+        }
+    }
+
+    /**
+     * Returns the view with posted valies
+     *
+     * @param $view
+     * @param $errors
+     */
+    private function ValidationFailed($view, $errors)
+    {
+        $token = $this->sessions->getToken();
+        $this->view($view, [
+            'errors' => $errors,
+            'token' => $token,
+            'firstName' => Output::phpOutput($_POST['FirstName']),
+            'lastName' => Output::phpOutput($_POST['LastName']) ,
+            'phone' => Output::phpOutput($_POST['Phone']),
+            'email' => Output::phpOutput($_POST['Email'])
+        ]);
+    }
+
+    /**
+     * Get's an array of values to validate
+     *
+     * @return array
+     */
+    private function getFields()
+    {
+        $fields = [
+            'Fname' => $_POST['FirstName'],
+            'Lname' => $_POST['LastName'],
+            'email'     => $_POST['Email'],
+            'phone'  => $_POST['Phone'],
+        ];
+
+        return $fields;
+    }
+
+    /**
+     * Validations for the input fields
+     * View = 0 -- create page
+     * View = 1 -- update page
+     *
+     * @param $fields
+     * @return array
+     */
+    private function validation($fields, $view = 0)
+    {
+        $validate = new validation();
+        if(isset($fields['Fname'])) { $validate->validate($fields['Fname'], $this->firstName); }
+        if(isset($fields['Lname'])) { $validate->validate($fields['Lname'], $this->lastName); }
+        if(isset($fields['email'])) {  $validate->validate($fields['email'], $this->email); }
+        if(isset($fields['phone'])) {  $validate->validate($fields['phone'], $this->phone); }
+
+        $errors = $validate->getErrors();
+
+        return $errors;
+    }
 }

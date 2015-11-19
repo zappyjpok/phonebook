@@ -36,6 +36,15 @@ class User {
         return $results;
     }
 
+    /**
+     * Add a user
+     *
+     * @param $firstName
+     * @param $lastName
+     * @param $username
+     * @param $email
+     * @param $password
+     */
     public static function Add($firstName, $lastName, $username, $email, $password)
     {
         try {
@@ -55,6 +64,15 @@ class User {
         }
     }
 
+    /**
+     * Edit a user
+     *
+     * @param $userID
+     * @param $firstName
+     * @param $lastName
+     * @param $username
+     * @param $email
+     */
     public static function edit($userID, $firstName, $lastName, $username, $email)
     {
         try {
@@ -77,6 +95,12 @@ class User {
         }
     }
 
+    /**
+     * Edit the password
+     *
+     * @param $id
+     * @param $password
+     */
     public static function editPassword($id, $password)
     {
         $pass = password_hash($password, PASSWORD_DEFAULT);
@@ -94,6 +118,12 @@ class User {
         }
     }
 
+    /**
+     * Find by email
+     *
+     * @param $email
+     * @return mixed
+     */
     public static function find_by_email($email)
     {
         try {

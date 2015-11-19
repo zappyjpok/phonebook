@@ -59,6 +59,12 @@ class Image {
         }
     }
 
+    /**
+     * Add the main image
+     *
+     * @param $contactID
+     * @param $imageID
+     */
     public static function AddMain($contactID, $imageID)
     {
         try {
@@ -86,5 +92,26 @@ class Image {
         } catch (Exception $e) {
             $error2 = $e->getMessage();
         }
+    }
+
+    public static function getMain($id)
+    {
+        try{
+            $sql = "SELECT imgPath
+                    FROM tblImage
+                    WHERE imgContactID = :id
+                    AND imgMain = 1
+                    LIMIT 1";
+            $db = new PDO_Connect();
+            $db->prepare($sql);
+            $db->bind(':id', $id);
+            $errors = $db->getErrors();
+            $results = $db->result_set();
+
+        } catch(Exception $e) {
+            $error = $e->getMessage();
+        }
+
+        return $results;
     }
 }

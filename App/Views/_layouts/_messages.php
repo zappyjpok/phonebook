@@ -7,15 +7,35 @@
  */ ?>
 
 <div class="row">
-    <?php
-    if(!empty($data['errors'])) {
-        ?>
-        <div class="alert-danger">
-            <?php foreach($data['errors'] as $error){
+    <div class="alert-danger">
+        <?php
+        if(!empty($data['errors']))
+        {
+            foreach ($data['errors'] as $error)
+            {
                 echo "<p class='spacing'>  $error </p>";
-            } ?>
-        </div>
-    <?php } ?>
+            }
+        }
+
+
+        if(!empty($_SESSION['errors']))
+        {
+            $errors = $this->sessions->withdrawl('errors');
+
+            foreach($errors as $error)
+            {
+                echo "<p class='spacing'>  $error </p>";
+            }
+        }
+
+
+        if(!empty($_COOKIE['error']))
+        {
+            echo $_COOKIE['error'];
+        }
+        ?>
+    </div>
+
 
 <?php
 if(isset($_COOKIE['success'])) { ?>
