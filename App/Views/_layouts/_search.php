@@ -8,7 +8,7 @@
 
 <div class="row">
     <div class="pull-right">
-        <form class="navbar-form" role="search">
+        <form class="navbar-form" action="<?php echo Links::action_link('contacts/getSearch') ?>" method="post" role="search">
             <div class="input-group">
                 <input type="text" class="form-control" placeholder="Search" name="search">
                 <div class="input-group-btn">

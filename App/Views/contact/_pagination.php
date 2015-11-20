@@ -11,11 +11,11 @@
         <?php  for($i = 1; $i < $data['pages'] + 1; $i++) {
             if($data['page'] == $i) { ?>
                 <li class="active">
-                    <a href="<?php echo Links::action_link('contacts/index/' . $i); ?>"> <?php echo Output::phpOutput($i); ?> </a>
+                    <a href="<?php echo Links::action_link($data['link'] . $i); ?>"> <?php echo Output::phpOutput($i); ?> </a>
                 </li>
             <?php } else { ?>
                 <li>
-                    <a href="<?php echo Links::action_link('contacts/index/' . $i); ?>"> <?php echo Output::phpOutput($i); ?> </a>
+                    <a href="<?php echo Links::action_link($data['link'] . $i); ?>"> <?php echo Output::phpOutput($i); ?> </a>
                 </li>
             <?php }
         } ?>

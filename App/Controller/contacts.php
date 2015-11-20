@@ -68,12 +68,14 @@ class contacts extends Controller
         $count = $paginated->getRows() / 10;
 
         $token = $this->sessions->getToken();
+        $link = 'contacts/index/';
 
         $this->view('contact/index', [
             'contacts' => $contactsPerPage[$page -1],
             'pages' => $count,
             'page'  => $page,
-            'token' => $token
+            'token' => $token,
+            'link'  => $link
         ]);
     }
 
@@ -124,7 +126,13 @@ class contacts extends Controller
         ]);
     }
 
-    public function search($page = 1, $search)
+    public function getSearch()
+    {
+        $search = Output::phpOutput($_POST['search']);
+        $this->redirectTo('contacts/search/' . $search);
+    }
+
+    public function search($search, $page = 1)
     {
         // check if user is logged in
         $this->checkIfLoggedIn();
@@ -140,12 +148,14 @@ class contacts extends Controller
         $count = $paginated->getRows() / 10;
 
         $token = $this->sessions->getToken();
+        $link = 'contacts/search/' . $search . '/';
 
         $this->view('contact/search', [
-            'contacts' => $contacts,
+            'contacts' => $contactsPerPage[$page -1],
             'pages' => $count,
             'page'  => $page,
-            'token' => $token
+            'token' => $token,
+            'link'  => $link
         ]);
 
     }
